@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -13,17 +13,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Croissant Calculation',
-  description: 'for tofi trust',
+  title: 'كراس المحاسبة اليومي',
+  description: 'متابعة المحاسبة اليومية والمخزون للمخبزة',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
-      lang='en'
+      lang='ar'
+      dir='rtl'
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className='min-h-full flex flex-col'>{children}</body>
+      <body className='min-h-full flex flex-col bg-zinc-950 text-zinc-100 selection:bg-amber-500/30 selection:text-amber-200'>
+        {children}
+      </body>
     </html>
   );
 }

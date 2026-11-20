@@ -45,10 +45,10 @@ function fmtDate(d) {
 /** Pieces actually pulled from stock for a single daily entry */
 function piecesPulled(entry) {
   return (
-    Number(entry.morning.fermentedCount || 0) +
-    Number(entry.evening.fermentedCount || 0) -
-    Number(entry.morning.leftoverBaked || 0) -
-    Number(entry.morning.leftoverRaw || 0)
+    Number(entry.morning?.fermentedCount || 0) +
+    Number(entry.evening?.fermentedCount || 0) -
+    Number(entry.morning?.leftoverBaked || 0) -
+    Number(entry.morning?.leftoverRaw || 0)
   );
 }
 
@@ -94,7 +94,10 @@ export default function InventoryPage() {
   }, [selectedStore]);
 
   // ── totals ────────────────────────────────────────────────────────────────
-  const totalReceived = deliveries.reduce((s, d) => s + d.trays * TRAY_SIZE, 0);
+  const totalReceived = deliveries.reduce(
+    (s, d) => s + d.trays * TRAY_SIZE,
+    0,
+  );
   const totalReturned = deliveries.reduce(
     (s, d) => s + Number(d.returnedPieces || 0),
     0,
@@ -199,52 +202,52 @@ export default function InventoryPage() {
     <div dir='rtl' className='min-h-screen bg-zinc-950 text-zinc-100'>
       <Navbar selectedStore={selectedStore} onStoreChange={setSelectedStore} />
 
-      <main className='max-w-5xl mx-auto px-4 py-8 space-y-8'>
+      <main className='max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6 pb-28 sm:pb-8'>
         {/* ── Header ── */}
         <div>
-          <h1 className='text-xl font-bold text-white'>
+          <h1 className='text-lg sm:text-xl font-bold text-white'>
             مراقبة المخزون والصوانٍ
           </h1>
-          <p className='text-sm text-zinc-400 mt-1'>
+          <p className='text-xs sm:text-sm text-zinc-400 mt-0.5'>
             تتبع توارد الصوانٍ واكتشف أي فجوة بين ما استُلم وما سُجِّل
           </p>
         </div>
 
-        {/* ── Summary cards ── */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-          <div className='bg-zinc-900 border border-zinc-800 p-4 rounded-xl'>
-            <div className='flex items-center justify-between text-zinc-400 text-xs mb-2'>
+        {/* ── Summary cards (Responsive 2x2 on mobile, 4 in row on desktop) ── */}
+        <div className='grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4'>
+          <div className='bg-zinc-900 border border-zinc-800 p-3 sm:p-4 rounded-xl'>
+            <div className='flex items-center justify-between text-zinc-400 text-[11px] sm:text-xs mb-1 sm:mb-2'>
               <span>إجمالي المستلم</span>
-              <Truck className='w-4 h-4 text-sky-400' />
+              <Truck className='w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400' />
             </div>
-            <p className='text-2xl font-bold text-sky-400'>
+            <p className='text-lg sm:text-2xl font-bold text-sky-400'>
               {totalReceived.toLocaleString()} حبة
             </p>
-            <div className='flex items-center justify-between text-xs text-zinc-500 mt-1'>
+            <div className='flex flex-wrap items-center justify-between text-[10px] sm:text-xs text-zinc-500 mt-1 gap-1'>
               <span>{(totalReceived / TRAY_SIZE).toFixed(1)} صينية</span>
               {totalReturned > 0 && (
                 <span className='text-rose-400 font-medium'>
-                  (مرتجع للبائع: {totalReturned} حبة)
+                  (مرتجع: {totalReturned})
                 </span>
               )}
             </div>
           </div>
 
-          <div className='bg-zinc-900 border border-zinc-800 p-4 rounded-xl'>
-            <div className='flex items-center justify-between text-zinc-400 text-xs mb-2'>
-              <span>إجمالي المسحوب (مسجَّل)</span>
-              <TrendingDown className='w-4 h-4 text-amber-400' />
+          <div className='bg-zinc-900 border border-zinc-800 p-3 sm:p-4 rounded-xl'>
+            <div className='flex items-center justify-between text-zinc-400 text-[11px] sm:text-xs mb-1 sm:mb-2'>
+              <span>إجمالي المسحوب</span>
+              <TrendingDown className='w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400' />
             </div>
-            <p className='text-2xl font-bold text-amber-400'>
+            <p className='text-lg sm:text-2xl font-bold text-amber-400'>
               {totalPulled.toLocaleString()} حبة
             </p>
-            <p className='text-xs text-zinc-500 mt-1'>
+            <p className='text-[10px] sm:text-xs text-zinc-500 mt-1'>
               {(totalPulled / TRAY_SIZE).toFixed(1)} صينية
             </p>
           </div>
 
           <div
-            className={`border p-4 rounded-xl ${
+            className={`border p-3 sm:p-4 rounded-xl ${
               stockStatus === 'critical'
                 ? 'bg-rose-950/30 border-rose-700/50'
                 : stockStatus === 'low'
@@ -252,10 +255,10 @@ export default function InventoryPage() {
                   : 'bg-zinc-900 border-zinc-800'
             }`}
           >
-            <div className='flex items-center justify-between text-zinc-400 text-xs mb-2'>
+            <div className='flex items-center justify-between text-zinc-400 text-[11px] sm:text-xs mb-1 sm:mb-2'>
               <span>المتبقي النظري</span>
               <Boxes
-                className={`w-4 h-4 ${
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
                   stockStatus === 'critical'
                     ? 'text-rose-400'
                     : stockStatus === 'low'
@@ -265,7 +268,7 @@ export default function InventoryPage() {
               />
             </div>
             <p
-              className={`text-2xl font-bold ${
+              className={`text-lg sm:text-2xl font-bold ${
                 stockStatus === 'critical'
                   ? 'text-rose-400'
                   : stockStatus === 'low'
@@ -275,7 +278,7 @@ export default function InventoryPage() {
             >
               {theoreticalRemaining.toLocaleString()} حبة
             </p>
-            <p className='text-xs text-zinc-500 mt-1'>
+            <p className='text-[10px] sm:text-xs text-zinc-500 mt-1'>
               ≈ {Math.max(0, theoreticalRemaining / TRAY_SIZE).toFixed(1)} صينية
             </p>
           </div>
@@ -283,7 +286,7 @@ export default function InventoryPage() {
           {/* Discrepancy card */}
           {discrepancy !== null ? (
             <div
-              className={`border p-4 rounded-xl ${
+              className={`border p-3 sm:p-4 rounded-xl ${
                 Math.abs(discrepancy) < 5
                   ? 'bg-zinc-900 border-zinc-800'
                   : discrepancy > 0
@@ -291,10 +294,10 @@ export default function InventoryPage() {
                     : 'bg-zinc-900 border-zinc-800'
               }`}
             >
-              <div className='flex items-center justify-between text-zinc-400 text-xs mb-2'>
-                <span>فجوة منذ آخر جرد</span>
+              <div className='flex items-center justify-between text-zinc-400 text-[11px] sm:text-xs mb-1 sm:mb-2'>
+                <span>فجوة الجرد</span>
                 <ShieldAlert
-                  className={`w-4 h-4 ${
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
                     Math.abs(discrepancy) < 5
                       ? 'text-zinc-400'
                       : discrepancy > 0
@@ -304,7 +307,7 @@ export default function InventoryPage() {
                 />
               </div>
               <p
-                className={`text-2xl font-bold ${
+                className={`text-lg sm:text-2xl font-bold ${
                   Math.abs(discrepancy) < 5
                     ? 'text-zinc-300'
                     : discrepancy > 0
@@ -315,22 +318,22 @@ export default function InventoryPage() {
                 {discrepancy > 0 ? '+' : ''}
                 {discrepancy} حبة
               </p>
-              <p className='text-xs text-zinc-500 mt-1'>
+              <p className='text-[10px] sm:text-xs text-zinc-500 mt-1 truncate'>
                 {Math.abs(discrepancy) < 5
                   ? 'لا توجد فجوة تُذكر ✓'
                   : discrepancy > 0
-                    ? '⚠ يبدو أن هناك مبيعات غير مسجَّلة'
+                    ? '⚠ مبيعات غير مسجَّلة'
                     : 'المخزون أكثر من المتوقع'}
               </p>
             </div>
           ) : (
-            <div className='bg-zinc-900 border border-zinc-800 p-4 rounded-xl'>
-              <div className='flex items-center justify-between text-zinc-400 text-xs mb-2'>
-                <span>فجوة منذ آخر جرد</span>
-                <ShieldAlert className='w-4 h-4 text-zinc-600' />
+            <div className='bg-zinc-900 border border-zinc-800 p-3 sm:p-4 rounded-xl'>
+              <div className='flex items-center justify-between text-zinc-400 text-[11px] sm:text-xs mb-1 sm:mb-2'>
+                <span>فجوة الجرد</span>
+                <ShieldAlert className='w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-600' />
               </div>
-              <p className='text-sm text-zinc-500 mt-2'>
-                أضف جرداً فعلياً أدناه لرؤية الفجوة
+              <p className='text-xs text-zinc-500 mt-2'>
+                أضف جرداً فعلياً بالأسفل
               </p>
             </div>
           )}
@@ -338,13 +341,13 @@ export default function InventoryPage() {
 
         {/* ── Big alert if negative stock ── */}
         {theoreticalRemaining < 0 && (
-          <div className='flex items-start gap-3 bg-rose-950/40 border border-rose-700/60 rounded-xl p-4'>
+          <div className='flex items-start gap-3 bg-rose-950/40 border border-rose-700/60 rounded-xl p-3.5 sm:p-4'>
             <AlertTriangle className='w-5 h-5 text-rose-400 shrink-0 mt-0.5' />
             <div>
-              <p className='font-bold text-rose-300'>
+              <p className='font-bold text-sm sm:text-base text-rose-300'>
                 تنبيه: المخزون المسجَّل يتجاوز ما استُلم!
               </p>
-              <p className='text-sm text-rose-400/80 mt-1'>
+              <p className='text-xs sm:text-sm text-rose-400/80 mt-1'>
                 تم تسجيل سحب {Math.abs(theoreticalRemaining)} حبة أكثر مما
                 استُلم — راجع سجلات الاستلام أو التخمير.
               </p>
@@ -352,16 +355,18 @@ export default function InventoryPage() {
           </div>
         )}
 
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6'>
           {/* ── Add Delivery ── */}
-          <section className='bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4'>
+          <section className='bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-4'>
             <div className='flex items-center gap-2'>
-              <Truck className='w-5 h-5 text-sky-400' />
-              <h2 className='font-bold text-white'>تسجيل استلام صوانٍ</h2>
+              <Truck className='w-4 h-4 sm:w-5 sm:h-5 text-sky-400' />
+              <h2 className='font-bold text-sm sm:text-base text-white'>
+                تسجيل استلام صوانٍ
+              </h2>
             </div>
 
             <form onSubmit={handleAddDelivery} className='space-y-3'>
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3'>
                 <div>
                   <label className='text-xs text-zinc-400 mb-1 block'>
                     تاريخ الاستلام
@@ -371,12 +376,12 @@ export default function InventoryPage() {
                     value={delDate}
                     onChange={(e) => setDelDate(e.target.value)}
                     required
-                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500'
+                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-sky-500'
                   />
                 </div>
                 <div>
                   <label className='text-xs text-zinc-400 mb-1 block'>
-                    عدد الصوانٍ المستلمة
+                    عدد الصوانٍ
                   </label>
                   <input
                     type='number'
@@ -385,12 +390,12 @@ export default function InventoryPage() {
                     onChange={(e) => setDelTrays(e.target.value)}
                     placeholder='28'
                     required
-                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500'
+                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-sky-500'
                   />
                 </div>
                 <div>
                   <label className='text-xs text-zinc-400 mb-1 block'>
-                    مرتجع للبائع
+                    مرتجع للبائع (حبة)
                   </label>
                   <input
                     type='number'
@@ -398,68 +403,71 @@ export default function InventoryPage() {
                     value={delReturned}
                     onChange={(e) => setDelReturned(e.target.value)}
                     placeholder='0 (اختياري)'
-                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-rose-500'
+                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-rose-500'
                   />
                 </div>
               </div>
+
               {delTrays && (
-                <p className='text-xs text-zinc-500'>
+                <p className='text-[11px] sm:text-xs text-zinc-400 bg-zinc-950/60 p-2 rounded-lg border border-zinc-800/80'>
                   = {Number(delTrays) * TRAY_SIZE} حبة مستلمة
                   {Number(delReturned) > 0 &&
                     ` − ${delReturned} حبة معطوبة مرجعة للبائع = ${Number(delTrays) * TRAY_SIZE - Number(delReturned)} حبة صافي`}
                 </p>
               )}
-              <div className='flex items-center gap-3'>
+
+              <div className='flex flex-col sm:flex-row items-center gap-2 sm:gap-3 pt-1'>
                 <button
                   type='submit'
-                  className='flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition'
+                  className='w-full sm:w-auto flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition active:scale-95'
                 >
                   <PackagePlus className='w-4 h-4' />
                   إضافة الشحنة
                 </button>
                 {delToast && (
-                  <span className='flex items-center gap-1 text-sm text-emerald-400'>
-                    <CheckCircle2 className='w-4 h-4' /> تم الحفظ
+                  <span className='flex items-center gap-1 text-xs sm:text-sm text-emerald-400'>
+                    <CheckCircle2 className='w-4 h-4' /> تم الحفظ في السحابة
                   </span>
                 )}
               </div>
             </form>
 
             {/* Delivery history */}
-            <div className='space-y-2 max-h-64 overflow-y-auto'>
+            <div className='space-y-2 max-h-56 sm:max-h-64 overflow-y-auto pt-2 border-t border-zinc-800/60'>
               {deliveries.length === 0 ? (
-                <p className='text-sm text-zinc-600 py-4 text-center'>
+                <p className='text-xs sm:text-sm text-zinc-600 py-4 text-center'>
                   لا توجد عمليات استلام مسجَّلة
                 </p>
               ) : (
                 deliveries.map((d) => (
                   <div
                     key={d.id}
-                    className='flex items-center justify-between bg-zinc-800/50 rounded-lg px-3 py-2 text-sm'
+                    className='flex items-center justify-between bg-zinc-800/40 border border-zinc-800/60 rounded-xl px-3 py-2 text-xs sm:text-sm'
                   >
                     <div>
                       <span className='font-semibold text-zinc-200'>
                         {getDayName(d.date)}
                       </span>
-                      <span className='text-zinc-500 mr-2 text-xs'>
+                      <span className='text-zinc-500 mr-2 text-[11px] sm:text-xs'>
                         {fmtDate(d.date)}
                       </span>
                     </div>
-                    <div className='flex items-center gap-3'>
+                    <div className='flex items-center gap-2 sm:gap-3'>
                       <span className='text-sky-400 font-bold'>
                         {d.trays} صينية
                       </span>
-                      <span className='text-zinc-500 text-xs'>
+                      <span className='text-zinc-500 text-[11px] hidden xs:inline'>
                         = {d.trays * TRAY_SIZE} حبة
                       </span>
                       {Number(d.returnedPieces || 0) > 0 && (
-                        <span className='text-rose-400 text-xs font-semibold bg-rose-500/10 px-1.5 py-0.5 rounded'>
-                          ↩ {d.returnedPieces} مرتجع
+                        <span className='text-rose-400 text-[10px] sm:text-xs font-semibold bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20'>
+                          ↩ {d.returnedPieces}
                         </span>
                       )}
                       <button
                         onClick={() => handleDeleteDelivery(d.id)}
-                        className='text-zinc-600 hover:text-rose-400 transition'
+                        className='p-1 text-zinc-500 hover:text-rose-400 transition'
+                        title='حذف'
                       >
                         <Trash2 className='w-3.5 h-3.5' />
                       </button>
@@ -471,14 +479,16 @@ export default function InventoryPage() {
           </section>
 
           {/* ── Physical Stock Check ── */}
-          <section className='bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4'>
+          <section className='bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-4'>
             <div className='flex items-center gap-2'>
-              <ClipboardCheck className='w-5 h-5 text-violet-400' />
-              <h2 className='font-bold text-white'>جرد فعلي للمخزون</h2>
+              <ClipboardCheck className='w-4 h-4 sm:w-5 sm:h-5 text-violet-400' />
+              <h2 className='font-bold text-sm sm:text-base text-white'>
+                جرد فعلي للمخزون
+              </h2>
             </div>
-            <p className='text-xs text-zinc-500'>
-              عُدَّ الصوانٍ المتبقية الآن وسجِّلها — سيقارنها النظام بما يجب أن
-              يكون موجوداً حسب السجلات.
+            <p className='text-xs text-zinc-400'>
+              عُدَّ الصوانٍ المتبقية الآن وسجِّلها — سيقارنها النظام بالسجلات
+              فوراً.
             </p>
 
             <form onSubmit={handleAddCheck} className='space-y-3'>
@@ -491,10 +501,10 @@ export default function InventoryPage() {
                   value={chkDate}
                   onChange={(e) => setChkDate(e.target.value)}
                   required
-                  className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500'
+                  className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-violet-500'
                 />
               </div>
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-3'>
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3'>
                 <div>
                   <label className='text-xs text-zinc-400 mb-1 block'>
                     صوانٍ كاملة
@@ -505,12 +515,12 @@ export default function InventoryPage() {
                     value={chkTrays}
                     onChange={(e) => setChkTrays(e.target.value)}
                     placeholder='0'
-                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500'
+                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-violet-500'
                   />
                 </div>
                 <div>
                   <label className='text-xs text-zinc-400 mb-1 block'>
-                    حبات مفرَّقة (صالحة)
+                    حبات صالحة مفرَّقة
                   </label>
                   <input
                     type='number'
@@ -519,12 +529,12 @@ export default function InventoryPage() {
                     value={chkPieces}
                     onChange={(e) => setChkPieces(e.target.value)}
                     placeholder='0'
-                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500'
+                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-violet-500'
                   />
                 </div>
                 <div>
                   <label className='text-xs text-zinc-400 mb-1 block'>
-                    حبات معطوبة (تنتظر المرتجع)
+                    معطوبة (تنتظر المرتجع)
                   </label>
                   <input
                     type='number'
@@ -532,39 +542,41 @@ export default function InventoryPage() {
                     value={chkDefective}
                     onChange={(e) => setChkDefective(e.target.value)}
                     placeholder='0 (اختياري)'
-                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-rose-500'
+                    className='w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-rose-500'
                   />
                 </div>
               </div>
+
               {(chkTrays || chkPieces || chkDefective) && (
-                <p className='text-xs text-zinc-500'>
+                <p className='text-[11px] sm:text-xs text-zinc-400 bg-zinc-950/60 p-2 rounded-lg border border-zinc-800/80'>
                   = {Number(chkTrays || 0) * TRAY_SIZE + Number(chkPieces || 0)}{' '}
                   حبة صالحة
                   {Number(chkDefective || 0) > 0 &&
-                    ` + ${chkDefective} حبة معطوبة تنتظر الإرجاع`}
-                  {` (إجمالي الموجود: ${Number(chkTrays || 0) * TRAY_SIZE + Number(chkPieces || 0) + Number(chkDefective || 0)} حبة)`}
+                    ` + ${chkDefective} معطوبة للمرتجع`}
+                  {` (المجموع: ${Number(chkTrays || 0) * TRAY_SIZE + Number(chkPieces || 0) + Number(chkDefective || 0)} حبة)`}
                 </p>
               )}
-              <div className='flex items-center gap-3'>
+
+              <div className='flex flex-col sm:flex-row items-center gap-2 sm:gap-3 pt-1'>
                 <button
                   type='submit'
-                  className='flex items-center gap-2 bg-violet-700 hover:bg-violet-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition'
+                  className='w-full sm:w-auto flex items-center justify-center gap-2 bg-violet-700 hover:bg-violet-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition active:scale-95'
                 >
                   <ClipboardCheck className='w-4 h-4' />
                   تسجيل الجرد
                 </button>
                 {chkToast && (
-                  <span className='flex items-center gap-1 text-sm text-emerald-400'>
-                    <CheckCircle2 className='w-4 h-4' /> تم الحفظ
+                  <span className='flex items-center gap-1 text-xs sm:text-sm text-emerald-400'>
+                    <CheckCircle2 className='w-4 h-4' /> تم الحفظ في السحابة
                   </span>
                 )}
               </div>
             </form>
 
             {/* Check history */}
-            <div className='space-y-2 max-h-64 overflow-y-auto'>
+            <div className='space-y-2 max-h-56 sm:max-h-64 overflow-y-auto pt-2 border-t border-zinc-800/60'>
               {stockChecks.length === 0 ? (
-                <p className='text-sm text-zinc-600 py-4 text-center'>
+                <p className='text-xs sm:text-sm text-zinc-600 py-4 text-center'>
                   لا توجد جرود مسجَّلة
                 </p>
               ) : (
@@ -589,12 +601,12 @@ export default function InventoryPage() {
                   return (
                     <div
                       key={c.id}
-                      className={`rounded-lg px-3 py-2.5 text-sm border ${
+                      className={`rounded-xl px-3 py-2.5 text-xs sm:text-sm border transition ${
                         Math.abs(diff) < 5
-                          ? 'bg-zinc-800/50 border-zinc-700/30'
+                          ? 'bg-zinc-800/40 border-zinc-800'
                           : diff < 0
                             ? 'bg-rose-950/30 border-rose-700/40'
-                            : 'bg-zinc-800/50 border-zinc-700/30'
+                            : 'bg-zinc-800/40 border-zinc-800'
                       }`}
                     >
                       <div className='flex items-center justify-between'>
@@ -602,28 +614,29 @@ export default function InventoryPage() {
                           <span className='font-semibold text-zinc-200'>
                             {getDayName(c.date)}
                           </span>
-                          <span className='text-zinc-500 mr-2 text-xs'>
+                          <span className='text-zinc-500 mr-2 text-[11px] sm:text-xs'>
                             {fmtDate(c.date)}
                           </span>
                           {idx === 0 && (
-                            <span className='text-xs bg-violet-800/50 text-violet-300 rounded px-1.5 py-0.5 mr-1'>
+                            <span className='text-[10px] bg-violet-800/50 text-violet-300 rounded px-1.5 py-0.5 mr-1 font-medium'>
                               آخر جرد
                             </span>
                           )}
                         </div>
                         <button
                           onClick={() => handleDeleteCheck(c.id)}
-                          className='text-zinc-600 hover:text-rose-400 transition'
+                          className='p-1 text-zinc-500 hover:text-rose-400 transition'
+                          title='حذف'
                         >
                           <Trash2 className='w-3.5 h-3.5' />
                         </button>
                       </div>
-                      <div className='mt-1.5 flex flex-wrap items-center gap-3 text-xs'>
+                      <div className='mt-1.5 flex flex-wrap items-center gap-2 sm:gap-3 text-xs'>
                         <span className='text-violet-400 font-semibold'>
                           فعلي: {physicalPieces} حبة
                           {defPieces > 0 && (
                             <span className='text-zinc-400 font-normal mr-1'>
-                              ({goodPieces} صالحة +{' '}
+                              ({goodPieces} +{' '}
                               <span className='text-rose-400 font-medium'>
                                 {defPieces} معطوبة
                               </span>
@@ -632,10 +645,10 @@ export default function InventoryPage() {
                           )}
                         </span>
                         <span className='text-zinc-500'>
-                          متوقع: {theoreticalOnDate} حبة
+                          متوقع: {theoreticalOnDate}
                         </span>
                         <span
-                          className={`font-bold ${
+                          className={`font-bold mr-auto sm:mr-0 ${
                             Math.abs(diff) < 5
                               ? 'text-zinc-400'
                               : diff < 0
@@ -657,28 +670,32 @@ export default function InventoryPage() {
         </div>
 
         {/* ── Daily pull breakdown ── */}
-        <section className='bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden'>
-          <div className='px-5 py-3 border-b border-zinc-800 flex items-center gap-2'>
+        <section className='bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden'>
+          <div className='px-4 sm:px-5 py-3 border-b border-zinc-800 flex items-center gap-2'>
             <TrendingDown className='w-4 h-4 text-amber-400' />
-            <h2 className='font-semibold text-white text-sm'>
+            <h2 className='font-semibold text-white text-xs sm:text-sm'>
               تفصيل السحب اليومي من المخزون
             </h2>
           </div>
           {entries.length === 0 ? (
-            <p className='text-center text-zinc-600 py-10 text-sm'>
+            <p className='text-center text-zinc-600 py-8 text-xs sm:text-sm'>
               لا توجد سجلات يومية بعد
             </p>
           ) : (
-            <div className='overflow-x-auto'>
-              <table className='w-full text-sm text-right'>
-                <thead className='bg-zinc-900 text-zinc-500 text-xs'>
+            <div className='overflow-x-auto -mx-1 sm:mx-0'>
+              <table className='w-full text-xs sm:text-sm text-right min-w-[500px]'>
+                <thead className='bg-zinc-900/90 text-zinc-500 text-xs'>
                   <tr>
-                    <th className='py-2.5 px-4'>اليوم</th>
-                    <th className='py-2.5 px-4'>تخمير الصباح</th>
-                    <th className='py-2.5 px-4'>تخمير المساء</th>
-                    <th className='py-2.5 px-4 text-zinc-400'>− باقي مطهو ص</th>
-                    <th className='py-2.5 px-4 text-zinc-400'>− باقي نيء ص</th>
-                    <th className='py-2.5 px-4 text-amber-400'>
+                    <th className='py-2.5 px-3 sm:px-4'>اليوم</th>
+                    <th className='py-2.5 px-3 sm:px-4'>تخمير الصباح</th>
+                    <th className='py-2.5 px-3 sm:px-4'>تخمير المساء</th>
+                    <th className='py-2.5 px-3 sm:px-4 text-zinc-400'>
+                      − باقي مطهو ص
+                    </th>
+                    <th className='py-2.5 px-3 sm:px-4 text-zinc-400'>
+                      − باقي نيء ص
+                    </th>
+                    <th className='py-2.5 px-3 sm:px-4 text-amber-400 font-bold'>
                       المسحوب الفعلي
                     </th>
                   </tr>
@@ -693,27 +710,27 @@ export default function InventoryPage() {
                           key={entry.id}
                           className='hover:bg-zinc-900/40 transition'
                         >
-                          <td className='py-2.5 px-4'>
+                          <td className='py-2.5 px-3 sm:px-4'>
                             <span className='font-semibold text-zinc-200'>
                               {getDayName(entry.date)}
                             </span>
-                            <span className='text-zinc-500 text-xs mr-2'>
+                            <span className='text-zinc-500 text-[11px] sm:text-xs mr-1.5'>
                               {fmtDate(entry.date)}
                             </span>
                           </td>
-                          <td className='py-2.5 px-4 text-zinc-300'>
-                            {entry.morning.fermentedCount || 0}
+                          <td className='py-2.5 px-3 sm:px-4 text-zinc-300'>
+                            {entry.morning?.fermentedCount || 0}
                           </td>
-                          <td className='py-2.5 px-4 text-zinc-300'>
-                            {entry.evening.fermentedCount || 0}
+                          <td className='py-2.5 px-3 sm:px-4 text-zinc-300'>
+                            {entry.evening?.fermentedCount || 0}
                           </td>
-                          <td className='py-2.5 px-4 text-zinc-500'>
-                            −{entry.morning.leftoverBaked || 0}
+                          <td className='py-2.5 px-3 sm:px-4 text-zinc-500'>
+                            −{entry.morning?.leftoverBaked || 0}
                           </td>
-                          <td className='py-2.5 px-4 text-zinc-500'>
-                            −{entry.morning.leftoverRaw || 0}
+                          <td className='py-2.5 px-3 sm:px-4 text-zinc-500'>
+                            −{entry.morning?.leftoverRaw || 0}
                           </td>
-                          <td className='py-2.5 px-4 font-bold text-amber-400'>
+                          <td className='py-2.5 px-3 sm:px-4 font-bold text-amber-400'>
                             {pulled}
                           </td>
                         </tr>

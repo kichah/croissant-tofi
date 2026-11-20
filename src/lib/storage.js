@@ -1,5 +1,30 @@
 import { supabase } from './supabase';
 
+// ─── In-memory Cache (per browser session, invalidated on every write) ────────
+
+const _cache = new Map(); // key → { data, ts }
+const TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function getCached(key) {
+  const entry = _cache.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > TTL_MS) {
+    _cache.delete(key);
+    return null;
+  }
+  return entry.data;
+}
+
+function setCached(key, data) {
+  _cache.set(key, { data, ts: Date.now() });
+}
+
+function invalidate(prefix) {
+  for (const k of _cache.keys()) {
+    if (k.startsWith(prefix)) _cache.delete(k);
+  }
+}
+
 // ─── Helpers: Mapping between Supabase flat columns & App objects ─────────────
 
 function mapDailyEntryFromDb(row) {
@@ -84,6 +109,10 @@ function mapStockCheckFromDb(row) {
 // ─── Daily Entries ────────────────────────────────────────────────────────────
 
 export async function getEntriesByStore(storeId) {
+  const cacheKey = `entries:${storeId}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
   try {
     const { data, error } = await supabase
       .from('daily_entries')
@@ -99,7 +128,9 @@ export async function getEntriesByStore(storeId) {
       return [];
     }
 
-    return (data || []).map(mapDailyEntryFromDb);
+    const result = (data || []).map(mapDailyEntryFromDb);
+    setCached(cacheKey, result);
+    return result;
   } catch (err) {
     console.error('Network error fetching daily entries:', err);
     return [];
@@ -140,6 +171,8 @@ export async function saveDailyEntry(entry) {
         throw error;
       }
     }
+
+    invalidate(`entries:${entry.storeId}`);
   } catch (err) {
     console.error('Network error saving daily entry:', err);
     throw err;
@@ -148,6 +181,9 @@ export async function saveDailyEntry(entry) {
 
 export async function deleteDailyEntry(entryId) {
   try {
+    // We need storeId to invalidate; derive it from the id prefix (store-1_date or store-2_date)
+    const storeId = String(entryId).split('_')[0] || '';
+
     const { error } = await supabase
       .from('daily_entries')
       .delete()
@@ -157,6 +193,8 @@ export async function deleteDailyEntry(entryId) {
       console.error('Error deleting daily entry from Supabase:', error.message);
       throw error;
     }
+
+    if (storeId) invalidate(`entries:${storeId}`);
   } catch (err) {
     console.error('Network error deleting daily entry:', err);
     throw err;
@@ -166,6 +204,10 @@ export async function deleteDailyEntry(entryId) {
 // ─── Deliveries ───────────────────────────────────────────────────────────────
 
 export async function getDeliveriesByStore(storeId) {
+  const cacheKey = `deliveries:${storeId}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
   try {
     const { data, error } = await supabase
       .from('deliveries')
@@ -178,7 +220,9 @@ export async function getDeliveriesByStore(storeId) {
       return [];
     }
 
-    return (data || []).map(mapDeliveryFromDb);
+    const result = (data || []).map(mapDeliveryFromDb);
+    setCached(cacheKey, result);
+    return result;
   } catch (err) {
     console.error('Network error fetching deliveries:', err);
     return [];
@@ -213,6 +257,8 @@ export async function saveDelivery(delivery) {
         throw error;
       }
     }
+
+    invalidate(`deliveries:${delivery.storeId}`);
   } catch (err) {
     console.error('Network error saving delivery:', err);
     throw err;
@@ -221,6 +267,12 @@ export async function saveDelivery(delivery) {
 
 export async function deleteDelivery(deliveryId) {
   try {
+    const { data: row, error: findErr } = await supabase
+      .from('deliveries')
+      .select('store_id')
+      .eq('id', deliveryId)
+      .maybeSingle();
+
     const { error } = await supabase
       .from('deliveries')
       .delete()
@@ -230,6 +282,8 @@ export async function deleteDelivery(deliveryId) {
       console.error('Error deleting delivery from Supabase:', error.message);
       throw error;
     }
+
+    if (!findErr && row?.store_id) invalidate(`deliveries:${row.store_id}`);
   } catch (err) {
     console.error('Network error deleting delivery:', err);
     throw err;
@@ -239,6 +293,10 @@ export async function deleteDelivery(deliveryId) {
 // ─── Physical Stock Checks ────────────────────────────────────────────────────
 
 export async function getStockChecksByStore(storeId) {
+  const cacheKey = `stockchecks:${storeId}`;
+  const cached = getCached(cacheKey);
+  if (cached) return cached;
+
   try {
     const { data, error } = await supabase
       .from('stock_checks')
@@ -254,7 +312,9 @@ export async function getStockChecksByStore(storeId) {
       return [];
     }
 
-    return (data || []).map(mapStockCheckFromDb);
+    const result = (data || []).map(mapStockCheckFromDb);
+    setCached(cacheKey, result);
+    return result;
   } catch (err) {
     console.error('Network error fetching stock checks:', err);
     return [];
@@ -289,6 +349,8 @@ export async function saveStockCheck(check) {
         throw error;
       }
     }
+
+    invalidate(`stockchecks:${check.storeId}`);
   } catch (err) {
     console.error('Network error saving stock check:', err);
     throw err;
@@ -297,6 +359,12 @@ export async function saveStockCheck(check) {
 
 export async function deleteStockCheck(checkId) {
   try {
+    const { data: row, error: findErr } = await supabase
+      .from('stock_checks')
+      .select('store_id')
+      .eq('id', checkId)
+      .maybeSingle();
+
     const { error } = await supabase
       .from('stock_checks')
       .delete()
@@ -306,6 +374,8 @@ export async function deleteStockCheck(checkId) {
       console.error('Error deleting stock check from Supabase:', error.message);
       throw error;
     }
+
+    if (!findErr && row?.store_id) invalidate(`stockchecks:${row.store_id}`);
   } catch (err) {
     console.error('Network error deleting stock check:', err);
     throw err;
